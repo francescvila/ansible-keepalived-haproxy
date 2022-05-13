@@ -1,0 +1,91 @@
+# Nginx
+
+- name: Create data volume directory
+  file:
+    path: "{{ data_path }}"
+    owner: root
+    group: root
+    state: directory
+    mode: '0755'
+
+- name: Create nginx volume directory
+  file:
+    path: "{{ data_path }}/nginx"
+    owner: root
+    group: root
+    state: directory
+    mode: '0755'
+
+- name: Create nginx volume directories
+  file:
+    path: "{{ data_path }}/nginx/{{ item }}"
+    owner: root
+    group: root
+    state: directory
+    mode: '0755'
+  with_items:
+    - conf
+    - html
+    - logs
+
+- name: Copy nginx default.conf file
+  copy:
+    src: "../files/nginx/default.conf"
+    dest: "{{ data_path }}/nginx/conf/default.conf"
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - Restart docker-compose
+
+- name: Generate nginx index.html file
+  template:
+    src: "../templates/nginx/index.html.j2"
+    dest: "{{ data_path }}/nginx/html/index.html"
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - Restart docker-compose
+
+- name: Generate nginx logrotate config
+  template:
+    src: "../templates/logrotate/nginx.j2"
+    dest: "/etc/logrotate.d/nginx"
+    owner: root
+    group: root
+    mode: '0644'
+
+# Docker
+
+- name: Install Docker dependencies
+  include_tasks:
+    file: docker.yml
+
+- name: Create init directory
+  file:
+    path: "{{ init_path }}"
+    owner: root
+    group: root
+    state: directory
+    mode: '0755'
+
+- name: Generate docker-compose .env file
+  template:
+    src: "../templates/docker/.env.j2"
+    dest: "{{ init_path }}/.env"
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - Restart docker-compose
+    
+- name: Docker-compose generation
+  template:
+    src: "../templates/docker/docker-compose.yml.j2"
+    dest: "{{ init_path }}/docker-compose.yml"
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - Restart docker-compose

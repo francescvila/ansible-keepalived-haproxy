@@ -1,0 +1,27 @@
+# Provision servers
+- hosts: all
+  user: vagrant
+  become: yes
+  gather_facts: yes
+  vars:
+    ansible_python_interpreter: /usr/bin/python3  
+  roles:
+    - common
+
+- hosts: proxy
+  user: vagrant
+  become: yes
+  gather_facts: yes
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  roles:
+  - role: proxy
+
+- hosts: web
+  user: vagrant
+  become: yes
+  gather_facts: yes
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  roles:
+  - role: web

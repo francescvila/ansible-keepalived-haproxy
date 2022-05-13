@@ -1,0 +1,25 @@
+#
+# All servers
+#
+
+[all:children]
+proxy
+web
+
+#
+# Servers
+#
+
+[proxy]
+proxy1 ansible_host=192.168.60.11 state=MASTER priority=101
+proxy2 ansible_host=192.168.60.12 state=BACKUP priority=100
+
+[web]
+web1 ansible_host=192.168.60.21
+web2 ansible_host=192.168.60.22
+
+[proxy:vars]
+keepalived_virtual_ip=192.168.60.10
+
+[web:vars]
+host=test.localhost

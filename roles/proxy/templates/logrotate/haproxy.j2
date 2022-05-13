@@ -1,0 +1,13 @@
+# HAProxy
+/var/log/haproxy.log {
+    daily
+    missingok
+    rotate 14
+    compress
+    notifempty
+    create 640 root adm
+    sharedscripts
+    postrotate
+      systemctl reload haproxy > /dev/null 2>&1
+    endscript
+}

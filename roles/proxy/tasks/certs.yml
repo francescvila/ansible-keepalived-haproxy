@@ -1,0 +1,68 @@
+- name: Create haproxy remote certs directory
+  file:
+    path: "/etc/haproxy/certs"
+    owner: root
+    group: root
+    state: directory
+    mode: '0755'
+
+- name: Create HAProxy local certs directory
+  become: no
+  delegate_to: localhost
+  file:
+    path: "roles/proxy/files/certs"
+    state: directory
+    mode: '0755'
+
+- name: Create HAProxy certs auxiliary csr directory
+  become: no
+  delegate_to: localhost
+  file:
+    path: "roles/proxy/files/certs/csr"
+    state: directory
+    mode: '0755'
+
+- name: Generate an OpenSSL private key
+  become: no
+  delegate_to: localhost
+  openssl_privatekey:
+    path: "roles/proxy/files/certs/{{ cert_server_hostname }}.key"
+    size: "{{ cert_key_size }}"
+    type: "{{ cert_key_type }}"
+    backup: yes
+
+- name: Generate an OpenSSL Certificate Signing Request with Subject information
+  become: no
+  delegate_to: localhost
+  openssl_csr:
+    path: "roles/proxy/files/certs/csr/{{ cert_server_hostname }}.csr"
+    privatekey_path: "roles/proxy/files/certs/{{ cert_server_hostname }}.key"
+    country_name: "{{ cert_country_name }}"
+    organization_name: "{{ cert_organization_name }}"
+    email_address: "{{ cert_email_address }}"
+    common_name: "{{ cert_server_hostname }}"
+
+- name: Generate a Self Signed OpenSSL certificate
+  become: no
+  delegate_to: localhost
+  openssl_certificate:
+    path: "roles/proxy/files/certs/{{ cert_server_hostname }}.crt"
+    privatekey_path: "roles/proxy/files/certs/{{ cert_server_hostname }}.key"
+    csr_path: "roles/proxy/files/certs/csr/{{ cert_server_hostname }}.csr"
+    provider: selfsigned
+  
+- name: Generate PEM certificate
+  become: no
+  delegate_to: localhost
+  assemble:
+    src: roles/proxy/files/certs/
+    dest: roles/proxy/files/certs/{{ cert_server_hostname }}.pem
+
+- name: Load PEM certificate
+  copy:
+    src: "files/certs/{{ cert_server_hostname }}.pem"
+    dest: "/etc/haproxy/certs/{{ cert_server_hostname }}.pem"
+    owner: root
+    group: root
+    mode: '0640'
+  notify: restart haproxy

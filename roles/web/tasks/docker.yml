@@ -1,0 +1,40 @@
+- name: Install python docker package
+  apt:
+    name: python3-docker
+    state: present
+    update_cache: yes
+
+- name: Add Docker GPG key
+  apt_key: url=https://download.docker.com/linux/ubuntu/gpg
+
+- name: Add Docker APT repository
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable
+    state: present
+    update_cache: yes
+
+- name: Install Docker
+  apt:
+    name: ['docker-ce=5:20.10.7*']
+    state: present
+    update_cache: yes
+    force: yes
+
+- name: Install Python Docker and Docker Compose modules
+  pip:
+    name:
+      - docker-compose
+
+# - name: Create a symbolic link for docker-compose
+#   file:
+#     src: /usr/local/bin/docker-compose
+#     dest: /usr/bin/docker-compose
+#     state: link
+
+- cron:
+    name: Create docker system prune cron job
+    minute: "0"
+    hour: "1"
+    job: "docker system prune -af >/dev/null 2>&1"
+    cron_file: docker_prune
+    user: root

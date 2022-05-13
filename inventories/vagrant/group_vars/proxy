@@ -1,0 +1,18 @@
+# OpenSSL self-signed certificate config
+cert_server_hostname: test.localhost
+cert_key_size: 4096
+cert_passphrase: # Set if you want passphrase
+cert_key_type: RSA # Others include DSA, ECC, Ed25519, Ed448, X25519, X448
+cert_country_name: EU
+cert_email_address: admin@test.localhost
+cert_organization_name: Test
+
+# HAProxy
+haproxy_version: 1.8.19-1+deb10u3
+haproxy_stats_username: admin
+haproxy_stats_password: p4.ss&W0rd!
+
+# Keepalived
+keepalived_version: 1:2.0.10-1
+keepalived_router_id: 1
+

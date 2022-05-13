@@ -1,0 +1,14 @@
+- name: Set timezone to Europe/Brussels
+  timezone:
+    name: Europe/Brussels
+
+- name: Pre-install list of packages
+  apt:
+    name: ['python3-apt','python3-pip','curl','vim','lsof','telnet','htop','logrotate']
+    state: present
+    update_cache: yes
+    
+- name: Pip force upgrade
+  pip: 
+    name: pip
+    extra_args: --upgrade

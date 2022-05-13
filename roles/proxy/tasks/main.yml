@@ -1,0 +1,62 @@
+- name: Install haproxy
+  apt:
+    name: "haproxy={{ haproxy_version}}"
+    state: present
+    update_cache: yes
+
+- name: Prevent haproxy from being upgraded
+  dpkg_selections:
+    name: haproxy
+    selection: hold
+
+# Create OpenSSL self-signed certificates
+- name: Create OpenSSL self-signed certificates
+  include_tasks:
+    file: certs.yml
+
+- name: Generate DH Parameters with a different size (2048 bits)
+  community.crypto.openssl_dhparam:
+    path: /etc/haproxy/dhparams.pem
+    size: 2048
+  # Execute on control machine: $ ansible-galaxy collection install community.crypto
+  notify:
+    - restart haproxy
+
+- name: Generate haproxy configuration file
+  template:
+    src: "../templates/haproxy/haproxy.cfg.j2"
+    dest: "/etc/haproxy/haproxy.cfg"
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - restart haproxy
+
+- name: Generate haproxy logrotate configuration file
+  template:
+    src: "../templates/logrotate/haproxy.j2"
+    dest: "/etc/logrotate.d/haproxy"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Install keepalived
+  apt:
+    name: "keepalived={{ keepalived_version }}"
+    state: present
+    update_cache: yes
+
+- name: Prevent keepalived from being upgraded
+  dpkg_selections:
+    name: keepalived
+    selection: hold
+
+- name: Create keepalived configuration file
+  template:
+    src: "../templates/keepalived/keepalived.conf.j2"
+    dest: "/etc/keepalived/keepalived.conf"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart keepalived

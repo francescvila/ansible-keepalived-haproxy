@@ -1,0 +1,6 @@
+# Nginx
+nginx_version: 1.21.5
+
+# Paths
+init_path: /root/init
+data_path: /srv/data
